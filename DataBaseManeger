@@ -1,0 +1,32 @@
+@Override
+public void onUpdateReceived(Update update) {
+    // 1. Проверяем, нажал ли пользователь на кнопку (CallbackQuery)
+    if (update.hasCallbackQuery()) {
+        String callData = update.getCallbackQuery().getData();
+        long chatId = update.getCallbackQuery().getMessage().getChatId();
+
+        if (callData.equals("WAKE_UP")) {
+            // Вызываем наш метод сохранения
+            DatabaseManager.saveWakeUp(chatId);
+
+            // Отправляем ответ пользователю, чтобы кнопка перестала "мигать"
+            AnswerCallbackQuery answer = new AnswerCallbackQuery();
+            answer.setCallbackQueryId(update.getCallbackQuery().getId());
+            answer.setText("Доброе утро! Время зафиксировано.");
+            
+            try {
+                execute(answer);
+                // Опционально: редактируем сообщение, чтобы убрать кнопку после нажатия
+                EditMessageText edit = new EditMessageText();
+                edit.setChatId(String.valueOf(chatId));
+                edit.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
+                edit.setText("☀️ Пробуждение зафиксировано! Хорошего дня.");
+                execute(edit);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    // Тут можно добавить обработку обычных сообщений (для записи еды)
+}
